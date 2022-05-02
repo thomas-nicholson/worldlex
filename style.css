@@ -1,0 +1,61 @@
+html, body {
+    height: 100%;
+    text-align: center;
+    font-family: sans-serif;
+}
+
+html {
+    display: table;
+    margin: auto;
+}
+
+body {
+    display: table-cell;
+    width: 400px;
+    box-sizing: border-box;
+}
+
+button, input[type='submit'] {
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-decoration: none;
+    font-size: 16px;
+    margin-top: 4px;
+    width: 100%;
+    cursor: pointer;
+    background-color: #4CAF50;
+}
+
+input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+
+}
+
+div {
+    width: 100%;
+}
+
+tr {
+    height: 25px;
+}
+
+.subject {
+    border-color: #4CAF50;
+    border-style: dotted;
+    border-width: 1px;
+}
+
+.answer-row {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+span {
+    flex-basis: 2;
+    flex-grow: 4;
+    padding: 5px;
+}
