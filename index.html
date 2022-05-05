@@ -96,13 +96,34 @@
                 return "\u2196\uFE0F";
             }
         }
-        function returnGuessString(value) {
-            return '<span>' +value.name+'</span><span>'+value.distance+" km</span><span>"+value.bearing+"°</span><span>"+value.cardinalDirection+'</span>';
+        function returnGuessString(value, correctAnswer) {
+            return correctAnswer ? 
+            '<span style="color: limegreen;">' +value.name+'</span><span>'+value.distance+" km</span><span>"+value.bearing+"°</span><span>"+value.cardinalDirection+'</span>' 
+            :
+            '<span>' +value.name+'</span><span>'+value.distance+" km</span><span>"+value.bearing+"°</span><span>"+value.cardinalDirection+'</span>';
+        }
+        function addGuess(guess, answer, guessList) {
+            const guessLat = guess.latitude;
+            const guessLng = guess.longitude;
+            const answerLat = answer.latitude;
+            const answerLng = answer.longitude;
+            const bearing = Math.round(generateBearing(guessLat, guessLng, answerLat, answerLng));
+            const distance = Math.round(distanceInKmBetweenEarthCoordinates(guessLat, guessLng, answerLat, answerLng));
+            const cardinalDirection = getCardinal(Math.round(bearing));
+            const guessObject = {
+                name: guess.name.toUpperCase(),
+                distance,
+                bearing,
+                cardinalDirection
+            };
+            document.getElementById('answer-list').children[guessNumber].innerHTML = returnGuessString(guessObject, (guess.name === answer.name));
+            guessList.push(guessObject);
+            localStorage.setItem('guessList', JSON.stringify(guessList));
         }
     </script>
     <!-- Startup Script -->
     <script>
-        const startDate = new Date('2022-05-02');
+        const startDate = new Date('2022-05-02').setHours(0,0,0,0);
         const dayInMillis = 86400000;
         const currentDate = new Date();
         const todaysIndex = Math.floor((currentDate-startDate)/dayInMillis);
@@ -120,16 +141,12 @@
             node.setAttribute("data-index", index);
             dataList.appendChild(node);
         });
-
-        console.log(dataList);
-
         const answer = countriesRandomised[todaysIndex];
 
         let guessList = localStorage.getItem('guessList') ? JSON.parse(localStorage.getItem('guessList')) : [];
 
         guessList.forEach((value, index)=> {
-            console.log(document.getElementById('answer-list').children[index]);
-            document.getElementById('answer-list').children[index].innerHTML = returnGuessString(value);
+            document.getElementById('answer-list').children[index].innerHTML = returnGuessString(value, (value.name === answer.name.toUpperCase()));
         });
 
         let guessNumber = localStorage.getItem('guessNumber') ? localStorage.getItem('guessNumber') : 0;
@@ -149,61 +166,46 @@
                 if (dataListChild.value === submitValue) {
                     if (dataListChild.value === answer.name.toUpperCase()) {
                         console.log("Correct Guess!");
+                        addGuess(countries[i], answer, guessList)
+                        alert("Correct!");
                         guessNumber = 6;
                         localStorage.setItem('guessNumber', guessNumber);
                     } else {
-                        const guessLat = countries[i].latitude;
-                        const guessLng = countries[i].longitude;
-                        const answerLat = answer.latitude;
-                        const answerLng = answer.longitude;
                         console.log("Try Again!");
-                        const bearing = Math.round(generateBearing(guessLat, guessLng, answerLat, answerLng));
-                        const distance = Math.round(distanceInKmBetweenEarthCoordinates(guessLat, guessLng, answerLat, answerLng));
-                        const cardinalDirection = getCardinal(Math.round(bearing));
-                        const guessObject = {
-                            name: countries[i].name.toUpperCase(),
-                            distance,
-                            bearing,
-                            cardinalDirection
-                        };
-                        document.getElementById('answer-list').children[guessNumber].innerHTML = returnGuessString(guessObject);
+                        addGuess(countries[i], answer, guessList)
                         guessNumber++;
                         localStorage.setItem('guessNumber', guessNumber);
-                        guessList.push(guessObject);
-                        localStorage.setItem('guessList', JSON.stringify(guessList));
                     }
                     return;
                 }
             }
-            console.log("Value doesn't Exist!");
+            alert('Country couldn\'t be found!')
         });
         document.getElementById('share-button').addEventListener('click', (evt) => {
             let clipString = '';
             guessList.forEach((value, index)=> {
                 clipString += value.distance+" km"+value.cardinalDirection+ '\n';
-                console.log(clipString);
             });
             navigator.clipboard.writeText(clipString);
         });
     </script>
     <script>
         const input = document.getElementById('country-input');
-        const browsers = document.getElementById('countries');
-        console.log(input);
+        const countriesList = document.getElementById('countries');
         input.onfocus = function () {
-            browsers.style.display = 'block';
+            countriesList.style.display = 'block';
             input.style.borderRadius = "5px 5px 0 0";  
         };
-        for (let option of browsers.options) {
+        for (let option of countriesList.options) {
             option.onclick = function () {
                 input.value = option.value;
-                browsers.style.display = 'none';
+                countriesList.style.display = 'none';
                 input.style.borderRadius = "5px";
             }
         };
         input.oninput = function() {
             var text = input.value.toUpperCase();
-            for (let option of browsers.options) {
+            for (let option of countriesList.options) {
                 if(option.value.toUpperCase().indexOf(text) > -1){
                     option.style.display = "block";
                 } else {
@@ -215,15 +217,15 @@
         input.onkeydown = function(e) {
             if (e.keyCode == 40) {
                 currentFocus++
-                addActive(browsers.options);
+                addActive(countriesList.options);
             } else if (e.keyCode == 38) {
                 currentFocus--
-                addActive(browsers.options);
+                addActive(countriesList.options);
             } else if(e.keyCode == 13){
                 e.preventDefault();
                 if (currentFocus > -1) {
-                    if (browsers.options) 
-                        browsers.options[currentFocus].click();
+                    if (countriesList.options) 
+                        countriesList.options[currentFocus].click();
                 }
             }
         }
