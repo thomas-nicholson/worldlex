@@ -189,13 +189,10 @@
             guessList.forEach((value, index)=> {
                 clipString += value.distance+" km"+value.cardinalDirection+ '\n';
             });
-            console.log(clipString);
-            clipString += 'thomas-nicholson.github.io/worldlex';
-            console.log(clipString);
             const shareData = {
                 title: 'WorldleX',
                 text: clipString,
-                url: 'https://thomas-nicholson.github.io/worldlex'
+                url: 'thomas-nicholson.github.io/worldlex'
             }
             await navigator.share(shareData);
             // alert("Copied to Clipboard!");
